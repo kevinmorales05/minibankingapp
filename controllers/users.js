@@ -124,7 +124,7 @@ const createUser = async (req, res) => {
     let currentDate = printCurrentDate();
     console.log("account Created ", accountNumberRandom);
     let newAccount = {
-      userOwnerId: req.body.githubId,
+      githubId: req.body.githubId,
       userFullName: req.body.firstName + " " + req.body.lastName,
       dateOfCreation: currentDate,
       accountNumber: accountNumberRandom,

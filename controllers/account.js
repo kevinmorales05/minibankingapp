@@ -22,9 +22,8 @@ const getUserAccounts = async (req, res) => {
       .collection("accounts")
       .findOne({ githubId });
       //analize if the sysstem found a user
-      if (balance.length == 0) {
-        console.log("User account not found!");
-        return res.status(404).json({ error: "User not found" });
+      if(result == null){
+        return res.status(404).json({ error: "Account not found!" });
       }
       res.setHeader("Content-Type", "application/json");
       res.status(200).json(result);
