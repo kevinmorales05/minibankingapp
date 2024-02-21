@@ -2,20 +2,9 @@ const mongodb = require("../data/database");
 const ObjectId = require("mongodb").ObjectId;
 const { validationResult } = require("express-validator");
 
-const getAll = async (req, res) => {
-  //#swagger.tags=['Users']
-  console.log("getAll");
-  const result = await mongodb.getDatabase().db().collection("users").find();
-  //const result = await mongodb.getDatabase().db().collection('users').find();
-  //console.log('these are the results ', result);
-  result.toArray().then((users) => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(200).json(users);
-  });
-};
 
-const getSingle = async (req, res) => {
-  //#swagger.tags=['Users']
+const getUserAddress = async (req, res) => {
+  //#swagger.tags=['Address']
   console.log("get single");
   console.log("from params ", req.params.id);
 
@@ -29,53 +18,53 @@ const getSingle = async (req, res) => {
     const result = await mongodb
       .getDatabase()
       .db()
-      .collection("users")
-      .find({ githubId: userId });
+      .collection("adresses")
+      .find({ _id: userId });
     console.log("Param found!");
     console.log("this is the result ", JSON.stringify(result._eventsCount));
-    result.toArray().then((users) => {
-      console.log("this is the result ", JSON.stringify(users));
+    result.toArray().then((address) => {
+      console.log("this is the result ", JSON.stringify(address));
       //analize if the sysstem found a user
-      if (users.length == 0) {
-        console.log("User not found!");
-        return res.status(404).json({ error: "User not found" });
+      if (address.length == 0) {
+        console.log("Address not found!");
+        return res.status(404).json({ error: "Address not found" });
       }
       res.setHeader("Content-Type", "application/json");
-      res.status(200).json(users[0]);
+      res.status(200).json(address[0]);
     });
   } else {
     return res.status(404).json({ error: "User id invalid!" });
   }
 };
-const updateUser = async (req, res) => {
-  //#swagger.tags=['Users']
+const updateAddress = async (req, res) => {
+  //#swagger.tags=['Address']
   console.log("Update User");
   if (req.params.id.length == 24) {
-    const userId = new ObjectId(req.params.id);
+    const addressId= new ObjectId(req.params.id);
     console.log("Valid id!");
     //find user
     const result = await mongodb
       .getDatabase()
       .db()
-      .collection("users")
-      .find({ _id: userId });
-
-    const user = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        birthday: req.body.birthday,
-        email: req.body.email,
-        adressId: req.body.adressId,
-        favoriteColor: req.body.favoriteColor,
-        githubId: req.body.githubId,
-        accountId: req.body.accountId
+      .collection("adresses")
+      .find({ _id: addressId});
+//pendiente esto
+    const address = {
+      userId : req.body.userId,
+      mainStreet: req.body.mainStreet,
+      city: req.body.city,
+      state: req.body.state,
+      country: req.body.country,
+      houseNumber: req.body.houseNumber,
+      reference: req.body.reference,
+      updateDate: req.body.updateDate,
     };
     const validations = validationResult(req);
     console.log("Validations ", validations);
 
     //validations
     if (validations.errors.length > 0) {
-      let errorDescriptions = "User invalid :";
+      let errorDescriptions = "Payload invalid :";
       validations.errors.map((er) => {
         errorDescriptions = errorDescriptions + " " + er.msg + ", ";
         console.log("Some errors in the payload");
@@ -83,39 +72,39 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ error: `${errorDescriptions}` });
       });
     } else {
-      console.log("this is the new body ", user);
+      console.log("this is the new body ", address);
       const response = await mongodb
         .getDatabase()
         .db()
-        .collection("users")
-        .replaceOne({ githubId: userId  }, user);
+        .collection("addreses")
+        .replaceOne({ _id: addressId }, address);
       if (response.modifiedCount > 0) {
-        res.status(200).send("Element updated successfully!");
+        res.status(200).send("Address updated successfully!");
       } else {
-        res.status(200).json(response.error || "User not found");
+        res.status(200).json(response.error || "Address not found");
       }
     }
   } else {
     return res.status(404).json({ error: "User id invalid!" });
   }
 };
-const createUser = async (req, res) => {
+const createAddress = async (req, res) => {
   const result = validationResult(req);
   console.log("results ", result.errors);
-  //#swagger.tags=['Users']
+  //#swagger.tags=['Address']
   console.log("request", req.body);
-  const user = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    birthday: req.body.birthday,
-    email: req.body.email,
-    adressId: req.body.adressId,
-    favoriteColor: req.body.favoriteColor,
-    githubId: req.body.githubId,
-    accountId: req.body.accountId
+  const address = {
+    userId : req.body.userId,
+    mainStreet: req.body.mainStreet,
+    city: req.body.city,
+    state: req.body.state,
+    country: req.body.country,
+    houseNumber: req.body.houseNumber,
+    reference: req.body.reference,
+    updateDate: req.body.updateDate,
   };
   if (result.errors.length > 0) {
-    let errorDescriptions = "User payload invalid :";
+    let errorDescriptions = "Payload invalid :";
     result.errors.map((er) => {
       errorDescriptions = errorDescriptions + " " + er.msg + ", ";
     });
@@ -127,40 +116,40 @@ const createUser = async (req, res) => {
     const response = await mongodb
       .getDatabase()
       .db()
-      .collection("users")
-      .insertOne(user);
+      .collection("adresses")
+      .insertOne(address);
     if (response.acknowledged > 0) {
-      res.status(200).send("User created created successfully!");
+      res.status(200).send("Address added successfully!");
     } else {
       res
         .status(200)
-        .json(response.error || "Some Error ocurred while creating the user");
+        .json(response.error || "Some Error ocurred while creating the address");
     }
   }
 };
 
-const deleteUser = async (req, res) => {
-  //#swagger.tags=['Users']
+const deleteUserAddress = async (req, res) => {
+  //#swagger.tags=['Address']
 
   //validate the size of the param.id
   if (req.params.id.length == 24) {
-    console.log("Delete User");
+    console.log("Delete Address");
     const userId = new ObjectId(req.params.id);
     console.log("this is the param ", userId);
 
     const response = await mongodb
       .getDatabase()
       .db()
-      .collection("users")
-      .deleteOne({ githubId: userId  });
+      .collection("adresses")
+      .deleteOne({ _id: userId });
     if (response.deletedCount > 0) {
-      res.status(200).send("Element deleted successfylly!");
+      res.status(200).send("Address deleted successfylly!");
     } else {
       res
         .status(200)
         .json(
           response.error ||
-            `Some Error ocurred while deleting the user`
+            `Some Error ocurred while deleting the address`
         );
     }
   } else {
@@ -169,9 +158,8 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-  getAll,
-  getSingle,
-  createUser,
-  updateUser,
-  deleteUser,
+  getUserAddress,
+  createAddress,
+  updateAddress,
+  deleteUserAddress,
 };

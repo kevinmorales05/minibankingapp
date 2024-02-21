@@ -72,7 +72,20 @@ passport.deserializeUser((user, done)=> {
 
 //request session
 app.get('/', (req, res) => {
-  res.send(req.session.user !== undefined ? `Logged in as ${req.session.user.displayName}` : "Logged out")
+  if(req.session.user){
+    //res.send(`Logged in as ${req.session.user.displayName}`);
+    let userCreated = {
+      "Message":"logged",
+      "name": req.session.user.displayName,
+      "githubid": req.session.user.id
+    }
+    
+    res.status(200).json(userCreated);
+  }
+  else {
+    res.send(req.session.user !== undefined ? `Logged in as ${req.session.user.displayName}` : "Logged out")
+
+  }
 });
 //authentication
 
