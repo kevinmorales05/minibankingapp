@@ -1,6 +1,7 @@
 const mongodb = require("../data/database");
 const ObjectId = require("mongodb").ObjectId;
 const { validationResult } = require("express-validator");
+const { printCurrentDate } = require("../utils/functions");
 
 
 const getUserAddress = async (req, res) => {
@@ -20,8 +21,15 @@ const getUserAddress = async (req, res) => {
       .db()
       .collection("adresses")
       .findOne({ githubId });
-      res.setHeader("Content-Type", "application/json");
+      
+      if(result == null){
+        return res.status(404).json({ error: "Address not found!" });
+
+      }
+      else {
+        res.setHeader("Content-Type", "application/json");
       res.status(200).json(result);
+      }
   } else {
     return res.status(404).json({ error: "User id invalid!" });
   }
@@ -32,6 +40,7 @@ const updateAddress = async (req, res) => {
   if (req.params.id.length == 24) {
     const addressId= new ObjectId(req.params.id);
     console.log("Valid id!");
+    let currentDate = printCurrentDate();
 //pendiente esto
     const address = {
       githubId : req.body.githubId,
@@ -41,7 +50,7 @@ const updateAddress = async (req, res) => {
       country: req.body.country,
       houseNumber: req.body.houseNumber,
       reference: req.body.reference,
-      updateDate: req.body.updateDate,
+      updateDate: currentDate,
     };
     const validations = validationResult(req);
     //console.log("Validations ", validations);
@@ -77,6 +86,7 @@ const createAddress = async (req, res) => {
   console.log("results ", result.errors);
   //#swagger.tags=['Address']
   console.log("request", req.body);
+  let currentDate = printCurrentDate();
   const address = {
     githubId : req.body.githubId,
     mainStreet: req.body.mainStreet,
@@ -85,7 +95,7 @@ const createAddress = async (req, res) => {
     country: req.body.country,
     houseNumber: req.body.houseNumber,
     reference: req.body.reference,
-    updateDate: req.body.updateDate,
+    updateDate: currentDate,
   };
   if (result.errors.length > 0) {
     let errorDescriptions = "Payload invalid :";

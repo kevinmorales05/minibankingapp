@@ -502,9 +502,6 @@
                 },
                 "reference": {
                   "example": "any"
-                },
-                "updateDate": {
-                  "example": "any"
                 }
               }
             }
@@ -561,9 +558,6 @@
                   "example": "any"
                 },
                 "reference": {
-                  "example": "any"
-                },
-                "updateDate": {
                   "example": "any"
                 }
               }
