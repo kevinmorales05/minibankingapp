@@ -1,3 +1,5 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const swaggerAutoGen = require('swagger-autogen')();
 
 const doc = {
@@ -5,7 +7,7 @@ const doc = {
         title: 'Mini Banking API',
         description: 'Mini Banking Api'
     },
-    host: 'localhost:3000',
+    host:  process.env.HOST,
     schemes: ['http', 'https']
 };
 
