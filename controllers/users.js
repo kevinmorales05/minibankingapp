@@ -1,6 +1,10 @@
 const mongodb = require("../data/database");
 const ObjectId = require("mongodb").ObjectId;
 const { validationResult } = require("express-validator");
+const {
+  generateAccountNumber,
+  printCurrentDate,
+} = require("../utils/functions");
 
 const getAll = async (req, res) => {
   //#swagger.tags=['Users']
@@ -103,16 +107,7 @@ const createUser = async (req, res) => {
   console.log("results ", result.errors);
   //#swagger.tags=['Users']
   console.log("request", req.body);
-  const user = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    birthday: req.body.birthday,
-    email: req.body.email,
-    addressId: req.body.addressId,
-    favoriteColor: req.body.favoriteColor,
-    githubId: req.body.githubId,
-    accountId: req.body.accountId,
-  };
+
   if (result.errors.length > 0) {
     let errorDescriptions = "User payload invalid :";
     result.errors.map((er) => {
@@ -123,17 +118,81 @@ const createUser = async (req, res) => {
     return res.status(404).json({ error: `${errorDescriptions}` });
   } else {
     console.log("Valid schemas!");
-    const response = await mongodb
+
+    //1. create account
+    let accountNumberRandom = generateAccountNumber();
+    let currentDate = printCurrentDate();
+    console.log("account Created ", accountNumberRandom);
+    let newAccount = {
+      userOwnerId: req.body.githubId,
+      userFullName: req.body.firstName + " " + req.body.lastName,
+      dateOfCreation: currentDate,
+      accountNumber: accountNumberRandom,
+    };
+    const resAccount = await mongodb
       .getDatabase()
       .db()
-      .collection("users")
-      .insertOne(user);
-    if (response.acknowledged > 0) {
-      res.status(200).send("User created created successfully!");
+      .collection("accounts")
+      .insertOne(newAccount);
+    if (resAccount.acknowledged > 0) {
+      console.log("Account added successfully!");
+
+      //2. create balance
+      let newBalance = {
+        githubId: req.body.githubId,
+        balance: 0,
+        balanceUpdateDate: currentDate,
+      };
+      const resBalance = await mongodb
+        .getDatabase()
+        .db()
+        .collection("balances")
+        .insertOne(newBalance);
+
+      if (resBalance.acknowledged > 0) {
+        console.log("Balance created successfully!");
+
+        //create json for the account
+        const user = {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          birthday: req.body.birthday,
+          email: req.body.email,
+          addressId: req.body.addressId,
+          favoriteColor: req.body.favoriteColor,
+          githubId: req.body.githubId,
+          accountId: accountNumberRandom,
+        };
+
+        const response = await mongodb
+          .getDatabase()
+          .db()
+          .collection("users")
+          .insertOne(user);
+        if (response.acknowledged > 0) {
+          res
+            .status(200)
+            .json({ message: "User created created successfully!", user });
+        } else {
+          res
+            .status(200)
+            .json(
+              response.error || "Some Error ocurred while creating the user"
+            );
+        }
+      } else {
+        res
+          .status(200)
+          .json(
+            resBalance.error || "Some Error ocurred while creating the address"
+          );
+      }
     } else {
       res
         .status(200)
-        .json(response.error || "Some Error ocurred while creating the user");
+        .json(
+          resAccount.error || "Some Error ocurred while creating the balance"
+        );
     }
   }
 };

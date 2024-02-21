@@ -7,6 +7,6 @@ const validationUser = require('../validation/validationUser');
 const { isAuthenticated } = require('../middleware/authenticate');
 //get balance
 router
-  .get('/:id', isAuthenticated, balanceController.getSingleBalance);
+  .get('/:githubId', isAuthenticated, balanceController.getSingleBalance);
 
 module.exports = router;

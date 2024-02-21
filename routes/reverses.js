@@ -6,6 +6,6 @@ const reversesController = require("../controllers/reverses");
 const { isAuthenticated } = require('../middleware/authenticate');
 //get balance
 router
-  .get('/:id', isAuthenticated, reversesController.getUserReverses);
+  .get('/:githubId', isAuthenticated, reversesController.getUserReverses);
 
 module.exports = router;

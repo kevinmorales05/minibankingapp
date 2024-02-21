@@ -6,6 +6,6 @@ const accountController = require("../controllers/account");
 const { isAuthenticated } = require('../middleware/authenticate');
 //get balance
 router
-  .get('/:id', isAuthenticated, accountController.getUserAccounts);
+  .get('/:githubId', isAuthenticated, accountController.getUserAccounts);
 
 module.exports = router;

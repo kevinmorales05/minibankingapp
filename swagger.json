@@ -168,6 +168,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "githubId": {
+                  "example": "any"
+                },
                 "firstName": {
                   "example": "any"
                 },
@@ -184,12 +187,6 @@
                   "example": "any"
                 },
                 "favoriteColor": {
-                  "example": "any"
-                },
-                "githubId": {
-                  "example": "any"
-                },
-                "accountId": {
                   "example": "any"
                 }
               }
@@ -223,7 +220,7 @@
         }
       }
     },
-    "/balance/{id}": {
+    "/balance/{githubId}": {
       "get": {
         "tags": [
           "Balance"
@@ -234,7 +231,7 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "githubId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -253,7 +250,7 @@
         }
       }
     },
-    "/transactions/{id}": {
+    "/transactions/{githubId}": {
       "get": {
         "tags": [
           "Transactions"
@@ -264,7 +261,7 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "githubId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -313,6 +310,9 @@
                 },
                 "reference": {
                   "example": "any"
+                },
+                "amount": {
+                  "example": "any"
                 }
               }
             }
@@ -343,6 +343,27 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "githubId": {
+                  "example": "any"
+                },
+                "transactionId": {
+                  "example": "any"
+                },
+                "justification": {
+                  "example": "any"
+                },
+                "dateOfReversed": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {
@@ -358,7 +379,7 @@
         }
       }
     },
-    "/accounts/{id}": {
+    "/accounts/{githubId}": {
       "get": {
         "tags": [
           "Accounts"
@@ -369,7 +390,7 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "githubId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -388,7 +409,7 @@
         }
       }
     },
-    "/reverses/{id}": {
+    "/reverses/{githubId}": {
       "get": {
         "tags": [
           "Reverses"
@@ -399,7 +420,7 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "githubId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -521,7 +542,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userId": {
+                "githubId": {
                   "example": "any"
                 },
                 "mainStreet": {
