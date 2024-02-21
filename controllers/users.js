@@ -17,32 +17,31 @@ const getAll = async (req, res) => {
 const getSingle = async (req, res) => {
   //#swagger.tags=['Users']
   console.log("get single");
-  console.log("from params ", req.params.id);
+  console.log("from params ", req.params.githubId);
 
-  if (req.params.id == undefined || null) {
+  if (req.params.githubId == undefined || null) {
     console.log("Param is empty");
   }
 
-  if (req.params.id.length == 24) {
-    console.log("user id valid!");
-    const userId = new ObjectId(req.params.id);
+  if (req.params.githubId.length > 0) {
+    console.log("github id valid!");
+    //const userId = new ObjectId(req.params.id);
+    const githubId = req.params.githubId;
+    console.log(githubId);
     const result = await mongodb
       .getDatabase()
       .db()
       .collection("users")
-      .find({ githubId: userId });
+      .findOne({ githubId: githubId });
     console.log("Param found!");
-    console.log("this is the result ", JSON.stringify(result._eventsCount));
-    result.toArray().then((users) => {
-      console.log("this is the result ", JSON.stringify(users));
-      //analize if the sysstem found a user
-      if (users.length == 0) {
-        console.log("User not found!");
-        return res.status(404).json({ error: "User not found" });
-      }
-      res.setHeader("Content-Type", "application/json");
-      res.status(200).json(users[0]);
-    });
+    console.log("result find one", result);
+    //analize if the sysstem found a user
+    if (result == null) {
+      console.log("User not found!");
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).json(result);
   } else {
     return res.status(404).json({ error: "User id invalid!" });
   }
@@ -50,25 +49,25 @@ const getSingle = async (req, res) => {
 const updateUser = async (req, res) => {
   //#swagger.tags=['Users']
   console.log("Update User");
-  if (req.params.id.length == 24) {
-    const userId = new ObjectId(req.params.id);
+  if (req.params.githubId.length > 0) {
+    const githubId = req.params.githubId;
     console.log("Valid id!");
     //find user
     const result = await mongodb
       .getDatabase()
       .db()
       .collection("users")
-      .find({ _id: userId });
+      .findOne({ githubId });
 
     const user = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        birthday: req.body.birthday,
-        email: req.body.email,
-        adressId: req.body.adressId,
-        favoriteColor: req.body.favoriteColor,
-        githubId: req.body.githubId,
-        accountId: req.body.accountId
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      birthday: req.body.birthday,
+      email: req.body.email,
+      addressId: req.body.addressId,
+      favoriteColor: req.body.favoriteColor,
+      githubId: req.body.githubId,
+      accountId: req.body.accountId,
     };
     const validations = validationResult(req);
     console.log("Validations ", validations);
@@ -88,9 +87,9 @@ const updateUser = async (req, res) => {
         .getDatabase()
         .db()
         .collection("users")
-        .replaceOne({ githubId: userId  }, user);
+        .replaceOne({ githubId }, user);
       if (response.modifiedCount > 0) {
-        res.status(200).send("Element updated successfully!");
+        res.status(200).send("User updated successfully!");
       } else {
         res.status(200).json(response.error || "User not found");
       }
@@ -112,7 +111,7 @@ const createUser = async (req, res) => {
     addressId: req.body.addressId,
     favoriteColor: req.body.favoriteColor,
     githubId: req.body.githubId,
-    accountId: req.body.accountId
+    accountId: req.body.accountId,
   };
   if (result.errors.length > 0) {
     let errorDescriptions = "User payload invalid :";
@@ -143,25 +142,22 @@ const deleteUser = async (req, res) => {
   //#swagger.tags=['Users']
 
   //validate the size of the param.id
-  if (req.params.id.length == 24) {
+  if (req.params.githubId.length > 0) {
     console.log("Delete User");
-    const userId = new ObjectId(req.params.id);
-    console.log("this is the param ", userId);
+    const githubId = req.params.githubId;
+    console.log("this is the param ", githubId);
 
     const response = await mongodb
       .getDatabase()
       .db()
       .collection("users")
-      .deleteOne({ githubId: userId  });
+      .deleteOne({ githubId });
     if (response.deletedCount > 0) {
       res.status(200).send("Element deleted successfylly!");
     } else {
       res
         .status(200)
-        .json(
-          response.error ||
-            `Some Error ocurred while deleting the user`
-        );
+        .json(response.error || `Some Error ocurred while deleting the user`);
     }
   } else {
     return res.status(404).json({ error: "User id invalid!" });

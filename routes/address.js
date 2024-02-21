@@ -8,8 +8,8 @@ const { isAuthenticated } = require('../middleware/authenticate');
 
 router
   .get('/addressUser/:id', isAuthenticated, addressController.getUserAddress)
-  .post('/createAddress', isAuthenticated, validationUser, addressController.createAddress)
-  .put('/updateAddress/:id', isAuthenticated, validationUser, addressController.updateAddress)
+  .post('/createAddress', isAuthenticated,  addressController.createAddress)
+  .put('/updateAddress/:id', isAuthenticated, addressController.updateAddress)
   .delete('/:id', isAuthenticated, addressController.deleteUserAddress);
 
 module.exports = router;

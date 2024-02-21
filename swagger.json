@@ -42,7 +42,7 @@
         }
       }
     },
-    "/users/{id}": {
+    "/users/{githubId}": {
       "get": {
         "tags": [
           "Users"
@@ -53,7 +53,7 @@
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "githubId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -75,7 +75,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "id",
+            "name": "githubId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -98,7 +98,7 @@
                 "email": {
                   "example": "any"
                 },
-                "adressId": {
+                "addressId": {
                   "example": "any"
                 },
                 "favoriteColor": {
@@ -133,7 +133,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "id",
+            "name": "githubId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -177,7 +177,7 @@
                 "email": {
                   "example": "any"
                 },
-                "adressId": {
+                "addressId": {
                   "example": "any"
                 },
                 "favoriteColor": {

@@ -7,10 +7,10 @@ const validationUser = require('../validation/validationUser');
 const { isAuthenticated } = require('../middleware/authenticate');
 
 router
-  .get('/:id', usersController.getSingle)
+  .get('/:githubId', usersController.getSingle)
   .post('/', isAuthenticated, validationUser, usersController.createUser)
-  .put('/:id', isAuthenticated, validationUser, usersController.updateUser)
-  .delete('/:id', isAuthenticated, usersController.deleteUser)
+  .put('/:githubId', isAuthenticated, validationUser, usersController.updateUser)
+  .delete('/:githubId', isAuthenticated, usersController.deleteUser)
   .get('/', usersController.getAll);
 
 module.exports = router;
