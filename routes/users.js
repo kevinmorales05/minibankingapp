@@ -7,7 +7,7 @@ const validationUser = require('../validation/validationUser');
 const { isAuthenticated } = require('../middleware/authenticate');
 
 router
-  .get('/:githubId', usersController.getSingle)
+  .get('/:githubId',isAuthenticated, usersController.getSingle)
   .post('/', isAuthenticated, validationUser, usersController.createUser)
   .put('/:githubId', isAuthenticated, validationUser, usersController.updateUser)
   .delete('/:githubId', isAuthenticated, usersController.deleteUser)

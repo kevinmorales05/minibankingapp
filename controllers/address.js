@@ -5,33 +5,23 @@ const { validationResult } = require("express-validator");
 
 const getUserAddress = async (req, res) => {
   //#swagger.tags=['Address']
-  console.log("get single");
-  console.log("from params ", req.params.id);
+  console.log("get single address");
+  console.log("from params ", req.params.githubId);
 
-  if (req.params.id == undefined || null) {
+  if (req.params.githubId == undefined || null) {
     console.log("Param is empty");
   }
 
-  if (req.params.id.length == 24) {
+  if (req.params.githubId.length > 0) {
     console.log("user id valid!");
-    const userId = new ObjectId(req.params.id);
+    const githubId = req.params.githubId;
     const result = await mongodb
       .getDatabase()
       .db()
       .collection("adresses")
-      .find({ _id: userId });
-    console.log("Param found!");
-    console.log("this is the result ", JSON.stringify(result._eventsCount));
-    result.toArray().then((address) => {
-      console.log("this is the result ", JSON.stringify(address));
-      //analize if the sysstem found a user
-      if (address.length == 0) {
-        console.log("Address not found!");
-        return res.status(404).json({ error: "Address not found" });
-      }
+      .findOne({ githubId });
       res.setHeader("Content-Type", "application/json");
-      res.status(200).json(address[0]);
-    });
+      res.status(200).json(result);
   } else {
     return res.status(404).json({ error: "User id invalid!" });
   }
@@ -42,15 +32,9 @@ const updateAddress = async (req, res) => {
   if (req.params.id.length == 24) {
     const addressId= new ObjectId(req.params.id);
     console.log("Valid id!");
-    //find user
-    const result = await mongodb
-      .getDatabase()
-      .db()
-      .collection("adresses")
-      .find({ _id: addressId});
 //pendiente esto
     const address = {
-      userId : req.body.userId,
+      githubId : req.body.githubId,
       mainStreet: req.body.mainStreet,
       city: req.body.city,
       state: req.body.state,
@@ -60,7 +44,7 @@ const updateAddress = async (req, res) => {
       updateDate: req.body.updateDate,
     };
     const validations = validationResult(req);
-    console.log("Validations ", validations);
+    //console.log("Validations ", validations);
 
     //validations
     if (validations.errors.length > 0) {
@@ -76,7 +60,7 @@ const updateAddress = async (req, res) => {
       const response = await mongodb
         .getDatabase()
         .db()
-        .collection("addreses")
+        .collection("adresses")
         .replaceOne({ _id: addressId }, address);
       if (response.modifiedCount > 0) {
         res.status(200).send("Address updated successfully!");
@@ -94,7 +78,7 @@ const createAddress = async (req, res) => {
   //#swagger.tags=['Address']
   console.log("request", req.body);
   const address = {
-    userId : req.body.userId,
+    githubId : req.body.githubId,
     mainStreet: req.body.mainStreet,
     city: req.body.city,
     state: req.body.state,
