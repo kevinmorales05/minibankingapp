@@ -109,7 +109,7 @@ const createUser = async (req, res) => {
     lastName: req.body.lastName,
     birthday: req.body.birthday,
     email: req.body.email,
-    adressId: req.body.adressId,
+    addressId: req.body.addressId,
     favoriteColor: req.body.favoriteColor,
     githubId: req.body.githubId,
     accountId: req.body.accountId
