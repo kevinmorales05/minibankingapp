@@ -29,7 +29,6 @@ app
   .use(passport.session())
   .use((err, req, res, next) => {
     console.error(err.stack);
-    // Responder con un código de estado 500 y un mensaje de error genérico
     res.status(500).json({ error: "Error interno del servidor" });
   })
   .use((req, res, next) => {
@@ -79,7 +78,7 @@ app.get('/', (req, res) => {
       "name": req.session.user.displayName,
       "githubid": req.session.user.id
     }
-    
+
     res.status(200).json(userCreated);
   }
   else {
