@@ -1,29 +1,14 @@
 const { validationResult } = require("express-validator");
 const mongodb = require("../data/database");
-const ObjectId = require("mongodb").ObjectId;
+const { printCurrentDate } = require("../utils/functions");
+const { ObjectId } = require("mongodb");
 
 const createTransaction = async (req, res) => {
   //#swagger.tags=['Transactions']
-  console.log("request", req.body);
-
-  const transaction = {
-    accountOrigin: req.body.accountOrigin,
-    nameAccountOrigin: req.body.nameAccountOrigin,
-    accountDestiny: req.body.accountDestiny,
-    nameAccountDestiny: req.body.nameAccountDestiny,
-    transactionDate: req.body.transactionDate,
-    reference: req.body.reference,
-    amount: req.body.amount,
-    status: "completed",
-  };
-///check balance
-
-//if(){}
-
-// else
-//error not balance
-
-
+  console.log("********* Init transaction **********");
+  console.log("Transacction request", req.body);
+  let currentDate = printCurrentDate();
+  //0. validate transaction payload
   const validations = validationResult(req);
   console.log("validation errors ", validations);
   if (validations.errors.length > 0) {
@@ -35,36 +20,145 @@ const createTransaction = async (req, res) => {
     console.log("descriptions ", errorDescriptions);
     return res.status(404).json({ error: `${errorDescriptions}` });
   } else {
-    const response = await mongodb
+    let githubId = req.body.githubId;
+    //1. getbalance of sender
+    const actualBalance = await mongodb
       .getDatabase()
       .db()
-      .collection("transactions")
-      .insertOne(transaction);
-    if (response.acknowledged > 0) {
-      res.status(200).send("Money send successfully!");
+      .collection("balances")
+      .findOne({ githubId });
+    console.log("actual balance sender ", actualBalance);
+    let newBalance = 0;
+    if (req.body.amount > actualBalance.balance) {
+      console.log(
+        "************End of transaction for insuffiente balance******"
+      );
+      return res.status(200).json(response.error || "Insufficient balance");
     } else {
-      res
-        .status(200)
-        .json(response.error || "Some Error ocurred during the transaction");
+      //2. update balance sender
+      newBalance = actualBalance.balance - req.body.amount;
+      console.log("old balance", actualBalance.balance);
+      console.log("new sender balance ", newBalance);
+
+      let dateNewBalance = printCurrentDate();
+      let balanceCreditor = {
+        githubId: req.body.githubId,
+        balance: newBalance,
+        dateUpdateDate: dateNewBalance,
+      };
+      const updateSenderBalance = await mongodb
+        .getDatabase()
+        .db()
+        .collection("balances")
+        .replaceOne({ githubId }, balanceCreditor);
+
+      if (updateSenderBalance.modifiedCount > 0) {
+        //3. look for the githubid of the receiver account holder
+        console.log("Sender balance updated succesfully ", balanceCreditor);
+        let accountNumber = req.body.accountDestiny;
+        const receiverAccount = await mongodb
+          .getDatabase()
+          .db()
+          .collection("accounts")
+          .findOne({ accountNumber });
+        if (receiverAccount !== null) {
+          //4. look for the balance of the receiver account holder
+          let githubId = receiverAccount.githubId;
+          const receiverBalance = await mongodb
+            .getDatabase()
+            .db()
+            .collection("balances")
+            .findOne({ githubId });
+          if (receiverBalance !== null) {
+            //5. update balance of the receiver account
+
+            let dateNewBalance = printCurrentDate();
+            let newReceiverBalance = {
+              githubId: req.body.githubId,
+              balance: receiverBalance.balance + req.body.amount,
+              dateUpdateDate: dateNewBalance,
+            };
+            const updateReceiverBalance = await mongodb
+              .getDatabase()
+              .db()
+              .collection("balances")
+              .replaceOne({ githubId }, newReceiverBalance);
+
+            if (updateReceiverBalance.modifiedCount > 0) {
+              console.log("********Updated receiver balance ********");
+              //6 save transaction
+              // persist transaction
+              console.log(
+                "********** Persist transaction ***********************"
+              );
+              const transaction = {
+                accountOrigin: req.body.accountOrigin,
+                nameAccountOrigin: req.body.nameAccountOrigin,
+                accountDestiny: req.body.accountDestiny,
+                nameAccountDestiny: req.body.nameAccountDestiny,
+                transactionDate: currentDate,
+                reference: req.body.reference,
+                amount: req.body.amount,
+                status: "completed",
+              };
+              const response = await mongodb
+                .getDatabase()
+                .db()
+                .collection("transactions")
+                .insertOne(transaction);
+              if (response.acknowledged > 0) {
+                console.log("Account added successfully!");
+                res.status(200).send("Transaction sent succesfully!");
+              } else {
+                res
+                  .status(200)
+                  .json(
+                    resAccount.error ||
+                      "Some Error ocurred during the transaction try again later"
+                  );
+              }
+            } else {
+              return res
+                .status(200)
+                .json(
+                  rupdateReceiverBalance.error ||
+                    "Some Error ocurred during the transaction"
+                );
+            }
+          } else {
+          }
+        } else {
+          res.status(200).send("Receiver account balance not found");
+        }
+      } else {
+        return res
+          .status(200)
+          .json(
+            updateSenderBalance.error ||
+              "Troubles updating the balance of sender, try again it later"
+          );
+      }
     }
   }
 };
 
 const reverseTransaction = async (req, res) => {
   //#swagger.tags=['Transactions']
+  const transactionId =req.body.id;
   const result = await mongodb
     .getDatabase()
     .db()
     .collection("transactions")
-    .find({ _id: req.params.id });
+    .findOne({  transactionId });
 
-  if (result) {
-    console.log("transaction found!");
+  if (result !== null) {
+    console.log("transaction found! ", result);
+    let dateReverse = printCurrentDate();
     const newReverse = {
       githubId: req.body.githubId,
       transactionId: req.body.transactionId,
       justification: req.body.justification,
-      dateOfReversed: req.body.dateOfReversed,
+      dateOfReversed: dateReverse,
     };
     const createReverse = await mongodb
       .getDatabase()
@@ -82,16 +176,68 @@ const reverseTransaction = async (req, res) => {
         nameAccountDestiny: result.nameAccountDestiny,
         transactionDate: result.transactionDate,
         reference: result.reference,
+        amount: result.amount,
         status: "reversed",
       };
       const response = await mongodb
         .getDatabase()
         .db()
         .collection("transactions")
-        .replaceOne({ _id: req.params.id }, updatedTransaction);
+        .replaceOne({ transactionId }, updatedTransaction);
 
       if (response.modifiedCount > 0) {
-        res.status(200).send("Transaction reverse created successfully!");
+        try {
+          //give the money back
+        //1. get the balance
+        let githubIdReceiver = req.body.githubIdReceiver;
+        let githubSender = req.body.githubId;
+        //sender
+        const balanceSender = await mongodb
+          .getDatabase()
+          .db()
+          .collection("balances")
+          .findOne({ githubIdReceiver });
+          console.log('balance receiver')
+        //receiver
+          const balanceReceiver = await mongodb
+          .getDatabase()
+          .db()
+          .collection("balances")
+          .findOne({ githubSender });
+          //2. update balances
+          let dateReverse = printCurrentDate();
+          const senderBalanceNow = {
+            githubId: res.body.githubId,
+            balance: balanceSender.balance + result.amount,
+            balanceUpdateDate: dateReverse,
+          }
+          const receiverBalanceNow ={
+            githubId: balanceReceiver.githubId,
+            balance: balanceReceiver.balance - result.amount,
+            balanceUpdateDate: dateReverse,
+          }
+          const balanceSenderNow = await mongodb
+          .getDatabase()
+          .db()
+          .collection("balances")
+          .replaceOne({ githubIdReceiver },senderBalanceNow);
+        //receiver
+          const balanceReceiverNow = await mongodb
+          .getDatabase()
+          .db()
+          .collection("balances")
+          .replaceOne({ githubSender }, receiverBalanceNow);
+
+
+
+        return res.status(200).send("Transaction reverse created successfully!");
+        }
+        catch (error){
+          console.log("Error ", error);
+          return res.status(401).send("Error during the transaction ");
+
+        }
+        
       } else {
         res
           .status(200)
@@ -114,7 +260,7 @@ const reverseTransaction = async (req, res) => {
 
 const getUserTransactions = async (req, res) => {
   //#swagger.tags=['Transactions']
-  if (req.params.githubId.length == 24) {
+  if (req.params.githubId.length > 0) {
     console.log("get user transactions");
     console.log("from params ", req.params.githubId);
     const githubId = req.params.githubId;
@@ -132,8 +278,33 @@ const getUserTransactions = async (req, res) => {
   }
 };
 
+const fundAccount = async (req, res) => {
+  //#swagger.tags=['Transactions']
+  let githubId = req.params.githubId;
+
+  const getUserBalance = await mongodb
+  .getDatabase()
+  .db()
+  .collection("balances")
+  .findOne({ githubId });
+
+  let dateNewBalance = printCurrentDate();
+      let balanceCreditor = {
+        githubId: getUserBalance.githubId,
+        balance: getUserBalance.balance + req.body.amount,
+        dateUpdateDate: dateNewBalance,
+      };
+      const updateSenderBalance = await mongodb
+        .getDatabase()
+        .db()
+        .collection("balances")
+        .replaceOne({ githubId }, balanceCreditor);
+        return res.status(200).json({message:`Account ${githubId} funded succesfully! Actual balance: ${getUserBalance.balance + req.body.amount} USD`});
+}
+
 module.exports = {
   createTransaction,
   reverseTransaction,
   getUserTransactions,
+  fundAccount
 };

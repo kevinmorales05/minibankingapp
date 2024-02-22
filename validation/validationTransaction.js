@@ -6,7 +6,10 @@ const validationTransaction = [
   body("nameAccountOrigin").notEmpty().withMessage("Accountholder name is required!"),
   body("nameAccountDestiny").notEmpty().withMessage("Accountholder destiny name is required!"),
   body("accountDestiny").notEmpty().withMessage("Account destiny is required!"),
-  body("reference").notEmpty().withMessage("email is required").trim().isEmail().withMessage("Email format is incorrect!")
+  body("reference").notEmpty().withMessage("Reference is required"),
+  body("githubId").notEmpty().withMessage("Github ID is required")
+
+
 ];
 
 module.exports = validationTransaction;

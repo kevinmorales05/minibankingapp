@@ -293,25 +293,25 @@
             "schema": {
               "type": "object",
               "properties": {
+                "githubId": {
+                  "example": "any"
+                },
+                "amount": {
+                  "example": "any"
+                },
+                "accountDestiny": {
+                  "example": "any"
+                },
                 "accountOrigin": {
                   "example": "any"
                 },
                 "nameAccountOrigin": {
                   "example": "any"
                 },
-                "accountDestiny": {
-                  "example": "any"
-                },
                 "nameAccountDestiny": {
                   "example": "any"
                 },
-                "transactionDate": {
-                  "example": "any"
-                },
                 "reference": {
-                  "example": "any"
-                },
-                "amount": {
                   "example": "any"
                 }
               }
@@ -359,7 +359,7 @@
                 "justification": {
                   "example": "any"
                 },
-                "dateOfReversed": {
+                "githubIdReceiver": {
                   "example": "any"
                 }
               }
@@ -375,6 +375,42 @@
           },
           "404": {
             "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/transactions/fund/{githubId}": {
+      "put": {
+        "tags": [
+          "Transactions"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "githubId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }

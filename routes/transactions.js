@@ -10,6 +10,7 @@ router
   .get('/:githubId', isAuthenticated, transactionsController.getUserTransactions)
   .post('/sendMoney', isAuthenticated, validationTransaction, transactionsController.createTransaction)
   .delete('/reverse/:id', isAuthenticated, transactionsController.reverseTransaction)
+  .put('/fund/:githubId', isAuthenticated, transactionsController.fundAccount )
   
 
 module.exports = router;

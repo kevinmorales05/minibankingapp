@@ -170,25 +170,25 @@ const createUser = async (req, res) => {
           .collection("users")
           .insertOne(user);
         if (response.acknowledged > 0) {
-          res
+          return res
             .status(200)
             .json({ message: "User created created successfully!", user });
         } else {
-          res
+          return res
             .status(200)
             .json(
               response.error || "Some Error ocurred while creating the user"
             );
         }
       } else {
-        res
+        return res
           .status(200)
           .json(
-            resBalance.error || "Some Error ocurred while creating the address"
+            resBalance.error || "Some Error ocurred while creating the balance"
           );
       }
     } else {
-      res
+      return res
         .status(200)
         .json(
           resAccount.error || "Some Error ocurred while creating the balance"
@@ -199,7 +199,6 @@ const createUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   //#swagger.tags=['Users']
-
   //validate the size of the param.id
   if (req.params.githubId.length > 0) {
     console.log("Delete User");
