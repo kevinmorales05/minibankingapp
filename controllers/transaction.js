@@ -74,7 +74,7 @@ const createTransaction = async (req, res) => {
 
             let dateNewBalance = printCurrentDate();
             let newReceiverBalance = {
-              githubId: req.body.githubId,
+              githubId: receiverBalance.githubId,
               balance: receiverBalance.balance + req.body.amount,
               dateUpdateDate: dateNewBalance,
             };
@@ -100,6 +100,7 @@ const createTransaction = async (req, res) => {
                 reference: req.body.reference,
                 amount: req.body.amount,
                 status: "completed",
+                githubId: req.body.githubId
               };
               const response = await mongodb
                 .getDatabase()
@@ -191,23 +192,25 @@ const reverseTransaction = async (req, res) => {
         //1. get the balance
         let githubIdReceiver = req.body.githubIdReceiver;
         let githubSender = req.body.githubId;
+        console.log(`sender ${githubSender} receiver ${githubIdReceiver}`)
         //sender
         const balanceSender = await mongodb
           .getDatabase()
           .db()
           .collection("balances")
-          .findOne({ githubIdReceiver });
-          console.log('balance receiver')
+          .findOne({ githubId: githubIdReceiver });
+          console.log('balance receiver', balanceSender)
         //receiver
           const balanceReceiver = await mongodb
           .getDatabase()
           .db()
           .collection("balances")
-          .findOne({ githubSender });
+          .findOne({ githubId: githubSender });
+          console.log('balance receiver ', balanceReceiver);
           //2. update balances
           let dateReverse = printCurrentDate();
           const senderBalanceNow = {
-            githubId: res.body.githubId,
+            githubId: balanceSender.githubId,
             balance: balanceSender.balance + result.amount,
             balanceUpdateDate: dateReverse,
           }
@@ -220,13 +223,13 @@ const reverseTransaction = async (req, res) => {
           .getDatabase()
           .db()
           .collection("balances")
-          .replaceOne({ githubIdReceiver },senderBalanceNow);
+          .replaceOne({ githubId: githubIdReceiver },senderBalanceNow);
         //receiver
           const balanceReceiverNow = await mongodb
           .getDatabase()
           .db()
           .collection("balances")
-          .replaceOne({ githubSender }, receiverBalanceNow);
+          .replaceOne({ githubId: githubSender }, receiverBalanceNow);
 
 
 
@@ -268,7 +271,7 @@ const getUserTransactions = async (req, res) => {
       .getDatabase()
       .db()
       .collection("transactions")
-      .findMany({ githubId });
+      .find({ githubId });
     results.toArray().then((transactions) => {
       res.setHeader("Content-Type", "application/json");
       res.status(200).json(transactions);
