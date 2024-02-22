@@ -350,6 +350,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "id": {
+                  "example": "any"
+                },
                 "githubId": {
                   "example": "any"
                 },
